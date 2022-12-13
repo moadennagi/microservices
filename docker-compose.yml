@@ -3,17 +3,17 @@ version: "3"
 services:
   api-gateway:
     build:
-      context: gateway
+      context: services/gateway
     ports:
       - 8080:5555
     command: "python wsgi.py"
 
   auth:
     build:
-      context: auth
+      context: services/auth
     command: "python wsgi.py"
 
   scrapper:
     build:
-      context: scrapper
+      context: services/scrapper
     command: "python wsgi.py"
