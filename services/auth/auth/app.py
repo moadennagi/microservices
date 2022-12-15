@@ -22,38 +22,38 @@ migrate = Migrate(app, db)
 # routes
 @app.post('/login')
 def login() -> tuple:
-	auth = request.authorization
-	if not auth:
-		return 'missing credentials', 401
+    auth = request.authorization
+    if not auth:
+        return 'missing credentials', 401
 
-	# find the user
-	username = auth.username
-	q = text('select * from users where username = :username')
-	with db.engine.connect() as connection:
-		res = connection.execute(q, username=username)
-		if not res:
-			return 'not found', 404
-		# Assuming the query returns 1 row
-		user = res.first()
+    # find the user
+    username = auth.username
+    q = text('select * from users where username = :username')
+    with db.engine.connect() as connection:
+        res = connection.execute(q, username=username)
+        if not res:
+            return 'not found', 404
+        # Assuming the query returns 1 row
+        user = res.first()
 
-	if not bcrypt.checkpw(auth.password.encode(), user.password):
-		return 'Invalid username or password', 401
+    if not bcrypt.checkpw(auth.password.encode(), user.password):
+        return 'Invalid username or password', 401
 
-	# create a token
-	token = create_jwt(user)
-	return token, 200
+    # create a token
+    token = create_jwt(user)
+    return token, 200
 
 @app.post('/validate')
 def validate():
-	"Validate request"
+    "Validate request"
 
-	auth_header = request.headers.get('Authorization')
-	if auth_header:
-		parts = auth_header.split(' ')
-		if len(parts) == 2 and parts[0] == 'Bearer':
-			# validate the token
-			token = parts[1]
-			if validate_jwt(token):
-				return token, 200
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        parts = auth_header.split(' ')
+        if len(parts) == 2 and parts[0] == 'Bearer':
+            # validate the token
+            token = parts[1]
+            if validate_jwt(token):
+                return token, 200
 
-	return 'unauthorized', 401
+    return 'unauthorized', 401

@@ -1,12 +1,13 @@
 version: "3"
 
 services:
-  api-gateway:
+
+  gateway:
     build:
       context: services/gateway
     ports:
-      - 8080:5555
-    command: "python wsgi.py"
+      - 5555
+    command: "gunicorn wsgi:app --worker-tmp-dir /dev/shm --bind 0.0.0.0:5555"
 
   auth:
     build:
@@ -17,3 +18,12 @@ services:
     build:
       context: services/scrapper
     command: "python wsgi.py"
+
+  reverse-proxy:
+    image: nginx
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - 80:80
+    depends_on:
+      - gateway

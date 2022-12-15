@@ -6,4 +6,4 @@ WORKDIR /app
 RUN	pip install --upgrade pip &&\
 	pip install -r requirements.txt
 
-CMD ["python", "wsgi.py"]
+CMD "python wsgi.py"
