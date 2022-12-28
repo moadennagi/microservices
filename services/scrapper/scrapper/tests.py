@@ -1,25 +1,20 @@
-"A simple webscrapping module"
-
+""
 import re
+import requests
+import time
 import asyncio
-
-from typing import Union
-from flask import Flask, jsonify, Response
+import aiohttp
 
 from bs4 import BeautifulSoup
 
-from .utils import get_pages_contents, parse_html
-from .models import Listing, ListingParser
+from typing import Callable
+from models import Listing, ListingParser
+from utils import get_page_content, get_pages_contents, parse_html
 
-app = Flask(__name__)
+PAGES: int = 10
 
-# app config
-app.config['SECRET'] = 'random'
-PAGES = 10
 
-@app.get('/listings')
-def listings() -> Union[tuple[list[dict], int], tuple[Response, int]]:
-    "Return list of listing from one page"
+if __name__ == '__main__':
     
     listings = []
     tag = {'url': '//a'}
@@ -42,6 +37,6 @@ def listings() -> Union[tuple[list[dict], int], tuple[Response, int]]:
         parser = ListingParser(html)
         res = parser.parse_html()
         listing = Listing(res)
-        listings.append(listing.to_json())
+        listings.append(listing)
 
-    return jsonify(listings), 200
+    print(len(listings))
