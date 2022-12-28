@@ -10,9 +10,7 @@ from bs4 import BeautifulSoup
 
 from lxml import etree
 
-from dataclasses import dataclass, field
-
-from utils import get_page_content, get_pages_contents, parse_html
+from dataclasses import dataclass, field, asdict
 
 
 LISTING: dict = {
@@ -43,12 +41,12 @@ class Listing:
         if surface:
             self.surface = int(surface)
 
-    def clean_price(self, x: str) -> Union[int, None]:
-        price = None
+    def clean_price(self, x: str) -> int:
+        price = 0
         try:
             x = x.encode("ascii", "ignore").decode().strip()
-            price = x.replace('DH', '')
-            price = int(price)
+            price_str = x.replace('DH', '')
+            price = int(price_str)
         except ValueError as e:
             print(e)
         return price
@@ -56,6 +54,10 @@ class Listing:
     def __repr__(self) -> str:
         kws = [f"{key}={value!r}" for key, value in self.__dict__.items() if key in self.REPR]
         return "{}({})".format(type(self).__name__, ", ".join(kws))
+
+    def to_json(self) -> dict:
+        return self.__dict__
+
 
 
 class ListingParser:
@@ -110,8 +112,6 @@ class ListingParser:
                         value = node.attrib['href']
                     else:
                         value = node.text
-                    if key == 'price':
-                        breakpoint()
                     res[key] = value
         return res
 
@@ -127,29 +127,4 @@ class ListingParser:
 
 
 if __name__ == '__main__':
-
-    listings = []
-    tag = {'url': '//a'}
-
-    urls = [f'https://www.avito.ma/fr/maroc/appartements-%C3%A0_vendre?o={i}' for i in range(1)]
-    res = asyncio.run(get_pages_contents(urls))
-
-    urls = []
-    for html in res:
-        # get the cards
-        soup = BeautifulSoup(html, 'lxml')
-        cards = soup.find_all('div', {'data-testid': re.compile('adListCard.')})
-        for card in cards:
-            html = str(card)
-            data = parse_html(html, tag)
-            urls.append(data.get('url'))
-
-    res = asyncio.run(get_pages_contents(urls))
-    for html in res:
-        parser = ListingParser(html)
-        res = parser.parse_html()
-        listing = Listing(res)
-        listings.append(listing)
-
-    for listing in listings:
-        print(listing.details)
+    pass

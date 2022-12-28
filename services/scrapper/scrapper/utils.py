@@ -4,6 +4,8 @@
 import asyncio
 import aiohttp
 
+from aiohttp_client_cache import CachedSession, SQLiteBackend
+
 from lxml import etree
 
 # requests config
@@ -11,6 +13,10 @@ HEADERS : dict = {
     "user-agent": "Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/12.0"
 }
 
+# TODO: move to configuration
+cache = SQLiteBackend(
+    cache_name='aiohttp-requests.sqlite'
+)
 
 def parse_html(html: str, config: dict, skip : list[str] = []) -> dict:
     """
@@ -37,7 +43,7 @@ def parse_html(html: str, config: dict, skip : list[str] = []) -> dict:
 async def get_page_content(url: str) -> str:
     "Get html content of the given url"
     content = ""
-    async with aiohttp.ClientSession() as session:
+    async with CachedSession(cache=cache) as session:
         async with session.get(url) as response:
             if response.status == 200:
                 content = await response.text()
